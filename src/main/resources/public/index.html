@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns="">
+
+<head>
+    <title>Lista de presentes</title>
+</head>
+<body>
+
+    <h1>Lista atual:</h1>
+    <div id="lista">
+
+    </div>
+    <div id="botoes">
+        <hr>
+        <h1>Adicionar presentes</h1>
+        <input type="text" placeholder="Nome do presente" id="nome">
+        <input type="text" placeholder="Tipo do presente (ex.: roupa, tecnologia,..." id="tipo">
+        <input type="number" placeholder="Quantidade desse presente" id="quantidade">
+        <input type="number" placeholder="Preço do presente" id="preco">
+        <button type="submit" id="botao" onclick="adicionar()">Adicionar presente</button>
+        <hr>
+        <button type="submit" id="botao" onclick="organizar()">Organizar Lista</button>
+        <hr>
+        <input type="text" placeholder="Nome do presente" id="nomeApagar">
+        <button type="submit" onclick="apagar()">Apagar presente</button>
+    </div>
+
+</body>
+
+<script defer>
+
+    carregarLista()
+
+    function apagar(){
+        url = "/lista/apagar/"+document.getElementById("nomeApagar").value
+        fetch(url, {method: "POST"})
+        .then(function(response){
+            return response.text();
+        })
+        .then(function(texto){
+            alert(texto);
+            carregarLista();
+        })
+    }
+
+    function carregarLista(){
+
+        var arrayObjetos;
+
+
+        fetch("/lista", {method: "GET"})
+        .then(function(response){
+            if(response.ok){
+                return response.json()
+            }
+            throw new Error("Houve um erro ao obter a lista")
+        })
+        .then(function(responseJson){
+            aplicaLista(responseJson)
+        })
+
+
+
+    }
+
+    function organizar(){
+
+        fetch("/lista/organizar", {method: "PUT"})
+        .then(function(){
+            carregarLista()
+        })
+
+    }
+
+    function aplicaLista(arrayObjetos){
+        document.getElementById("lista").innerHTML = "";
+
+        for(i = 0; i<arrayObjetos.length; i++){
+            presente = document.createElement("p")
+            presente.textContent = arrayObjetos[i].tipo + "     " + arrayObjetos[i].nome + "     " + arrayObjetos[i].quantidade + "      " + arrayObjetos[i].preco
+            document.getElementById("lista").appendChild(presente)
+        }
+    }
+
+    function adicionar(){
+        nome = document.getElementById("nome").value
+        tipo = document.getElementById("tipo").value
+        quantidade = document.getElementById("quantidade").value
+        preco = document.getElementById("preco").value
+
+        url = "/lista/add/" + encodeURIComponent(nome) + "/" + encodeURIComponent(tipo) + "/" + encodeURIComponent(quantidade) + "/" +encodeURIComponent(preco);
+        fetch(url, {method: "POST"})
+        .then(function(response){
+            if(response.ok){
+                return response.text();
+            }
+            return "Houve um erro ao adicionar o presente"
+        })
+        .then(function(texto){
+            alert(texto)
+            carregarLista()
+        })
+
+
+    }
+
+</script>
+
+</html>
